@@ -27,6 +27,13 @@ describe('Modal.confirm triggers callbacks correctly', () => {
     });
   }
 
+  it('should not render title when title not defined', () => {
+    confirm({
+      content: 'some descriptions',
+    });
+    expect(document.querySelector('.ant-modal-confirm-title')).toBe(null);
+  });
+
   it('trigger onCancel once when click on cancel button', () => {
     const onCancel = jest.fn();
     const onOk = jest.fn();
@@ -80,17 +87,15 @@ describe('Modal.confirm triggers callbacks correctly', () => {
     });
   });
 
-  if (process.env.REACT !== '15') {
-    it('shows animation when close', () => {
-      jest.useFakeTimers();
-      open();
-      $$('.ant-btn')[0].click();
-      expect($$('.ant-modal-confirm')).toHaveLength(1);
-      jest.runAllTimers();
-      expect($$('.ant-modal-confirm')).toHaveLength(0);
-      jest.useRealTimers();
-    });
-  }
+  it('shows animation when close', () => {
+    jest.useFakeTimers();
+    open();
+    expect($$('.ant-modal-confirm')).toHaveLength(1);
+    $$('.ant-btn')[0].click();
+    jest.runAllTimers();
+    expect($$('.ant-modal-confirm')).toHaveLength(0);
+    jest.useRealTimers();
+  });
 
   it('ok only', () => {
     open({ okCancel: false });
@@ -208,5 +213,31 @@ describe('Modal.confirm triggers callbacks correctly', () => {
       expect(destroyFns.length).toBe(length - index - 1);
     });
     jest.useRealTimers();
+  });
+
+  it('should warning when pass a string as icon props', () => {
+    const warnSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    confirm({
+      content: 'some descriptions',
+      icon: 'ab',
+    });
+    expect(warnSpy).not.toHaveBeenCalled();
+    confirm({
+      content: 'some descriptions',
+      icon: 'question',
+    });
+    expect(warnSpy).toHaveBeenCalledWith(
+      `Warning: [antd: Modal] \`icon\` is using ReactNode instead of string naming in v4. Please check \`question\` at https://ant.design/components/icon`,
+    );
+    warnSpy.mockRestore();
+  });
+
+  it('ok button should trigger onOk once when click it many times quickly', () => {
+    const onOk = jest.fn();
+    open({ onOk });
+    // Fifth Modal
+    $$('.ant-btn-primary')[0].click();
+    $$('.ant-btn-primary')[0].click();
+    expect(onOk).toHaveBeenCalledTimes(1);
   });
 });

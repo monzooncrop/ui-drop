@@ -19,11 +19,12 @@ When requiring users to interact with the application, but without jumping to a 
 | cancelText | Text of the Cancel button | string\|ReactNode | `Cancel` |
 | centered | Centered Modal | Boolean | `false` |
 | closable | Whether a close (x) button is visible on top right of the modal dialog or not | boolean | true |
+| closeIcon | custom close icon | ReactNode | - |
 | confirmLoading | Whether to apply loading visual effect for OK button or not | boolean | false |
 | destroyOnClose | Whether to unmount child components on onClose | boolean | false |
 | footer | Footer content, set as `footer={null}` when you don't need default buttons | string\|ReactNode | OK and Cancel buttons |
 | forceRender | Force render Modal | boolean | false |
-| getContainer | Return the mount node for Modal | (instance): HTMLElement | () => document.body |
+| getContainer | Return the mount node for Modal | HTMLElement \| `() => HTMLElement` \| Selectors \| false | document.body |
 | mask | Whether show mask or not. | Boolean | true |
 | maskClosable | Whether to close the modal dialog when the mask (area outside the modal) is clicked | boolean | true |
 | maskStyle | Style for modal's mask element. | object | {} |
@@ -58,13 +59,12 @@ The items listed above are all functions, expecting a settings object as paramet
 
 | Property | Description | Type | Default |
 | --- | --- | --- | --- |
-| autoFocusButton | Specify which button to autofocus | null\|string: `ok` `cancel` | `ok` |
-| cancelText | Text of the Cancel button | string | `Cancel` |
+| autoFocusButton | Specify which button to autofocus | null\| `ok` \| `cancel` | `ok` |
+| cancelText | Text of the Cancel button with Modal.confirm | string | `Cancel` |
 | centered | Centered Modal | Boolean | `false` |
 | className | className of container | string | - |
 | content | Content | string\|ReactNode | - |
-| icon | custom icon (`Added in 3.12.0`) | string\|ReactNode | `<Icon type="question-circle">` |
-| iconType | Icon `type` of the Icon component (deperated after `3.12.0`) | string | `question-circle` |
+| icon | custom icon (`Added in 3.12.0`) | ReactNode | `<QuestionCircle />` |
 | keyboard | Whether support press esc to close | Boolean | true |
 | mask | Whether show mask or not. | Boolean | true |
 | maskClosable | Whether to close the modal dialog when the mask (area outside the modal) is clicked | Boolean | `false` |
@@ -109,3 +109,45 @@ browserHistory.listen(() => {
   Modal.destroyAll();
 });
 ```
+
+### Modal.useModal()
+
+When you need using Context, you can use `contextHolder` which created by `Modal.useModal` to insert into children. Modal created by hooks will get all the context where `contextHolder` are. Created `modal` has the same creating function with `Modal.method`](<#Modal.method()>).
+
+```jsx
+const [modal, contextHolder] = Modal.useModal();
+
+React.useEffect(() => {
+  modal.confirm({
+    // ...
+  });
+}, []);
+
+return <div>{contextHolder}</div>;
+```
+
+## FAQ
+
+### Why I can not access context, redux in Modal.xxx?
+
+antd will dynamic create React instance by `ReactDOM.render` when call Modal methods. Whose context is different with origin code located context.
+
+When you need context info (like ConfigProvider context), you can use `Modal.useModal` to get `modal` instance and `contextHolder` node. And put it in your children:
+
+```tsx
+const [modal, contextHolder] = Modal.useModal();
+
+// then call modal.confirm instead of Modal.confirm
+
+return (
+  <Context1.Provider value="Ant">
+    {/* contextHolder is in Context1 which mean modal will not get context of Context1 */}
+    {contextHolder}
+    <Context2.Provider value="Design">
+      {/* contextHolder is out of Context2 which mean modal will not get context of Context2 */}
+    </Context2.Provider>
+  </Context1.Provider>
+);
+```
+
+**Note:** You must insert `contextHolder` into your children with hooks. You can use origin method if you do not need context connection.

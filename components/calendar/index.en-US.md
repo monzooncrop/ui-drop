@@ -41,8 +41,12 @@ When data is in the form of dates, such as schedules, timetables, prices calenda
 | monthCellRender | Customize the display of the month cell, the returned content will be appended to the cell | function(date: moment): ReactNode | - |  |
 | monthFullCellRender | Customize the display of the month cell, the returned content will override the cell | function(date: moment): ReactNode | - |  |
 | validRange | to set valid range | \[[moment](http://momentjs.com/), [moment](http://momentjs.com/)] | - |  |
-| value | The current selected date | [moment](http://momentjs.com/) | current date |
+| value | The current selected date | [moment](http://momentjs.com/) | current date |  |
 | onPanelChange | Callback for when panel changes | function(date: moment, mode: string) | - |  |
 | onSelect | Callback for when a date is selected | function(date: moment） | - |  |
 | onChange | Callback for when date changes | function(date: moment） | - |  |
-| headerRender | render custom header in panel | function(object:{value: moment, type: string, onChange: f(), onTypeChange: f()}) | - | 3.19.0 |
+| headerRender | render custom header in panel | function(object:{value: moment, type: string, onChange: f(), onTypeChange: f()}) | - |  |
+
+## FAQ
+
+- [How to use Calendar with customize date library like dayjs](/docs/react/replace-moment#Calendar)

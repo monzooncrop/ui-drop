@@ -25,7 +25,7 @@ This components provides some static methods, with usage and arguments as follow
 
 | Argument | Description | Type | Default |
 | --- | --- | --- | --- |
-| content | content of the message | string\|ReactNode | - |
+| content | content of the message | string\|ReactNode\|config | - |
 | duration | time(seconds) before auto-dismiss, don't dismiss if set to 0 | number | 1.5 |
 | onClose | Specify a function that will be called when the message is closed | Function | - |
 
@@ -36,7 +36,15 @@ This components provides some static methods, with usage and arguments as follow
 
 where `level` refers one static methods of `message`. The result of `then` method will be a Promise.
 
+Supports passing parameters wrapped in an object:
+
 - `message.open(config)`
+- `message.success(config)`
+- `message.error(config)`
+- `message.info(config)`
+- `message.warning(config)`
+- `message.warn(config)` // alias of warning
+- `message.loading(config)`
 
 The properties of config are as follows:
 
@@ -46,6 +54,7 @@ The properties of config are as follows:
 | duration | time(seconds) before auto-dismiss, don't dismiss if set to 0 | number | 3 |
 | onClose | Specify a function that will be called when the message is closed | function | - |
 | icon | Customized Icon | ReactNode | - |
+| key | The unique identifier of the Message | string\|number | - |
 
 ### Global static methods
 
@@ -61,6 +70,7 @@ message.config({
   top: 100,
   duration: 2,
   maxCount: 3,
+  rtl: true,
 });
 ```
 
@@ -70,3 +80,4 @@ message.config({
 | getContainer | Return the mount node for Message | () => HTMLElement | () => document.body |
 | maxCount | max message show, drop oldest if exceed limit | number | - |
 | top | distance from top | number | 24 |
+| rtl | whether to enable RTL mode | boolean | `false` |

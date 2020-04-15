@@ -1,9 +1,7 @@
 import * as React from 'react';
-import { createElement, Component } from 'react';
 import omit from 'omit.js';
 import classNames from 'classnames';
 import { ConfigConsumer, ConfigConsumerProps } from '../config-provider';
-import { polyfill } from 'react-lifecycles-compat';
 
 function getNumberArray(num: string | number | undefined | null) {
   return num
@@ -18,11 +16,29 @@ function getNumberArray(num: string | number | undefined | null) {
     : [];
 }
 
+function renderNumberList(position: number, className: string) {
+  const childrenToReturn: React.ReactElement<any>[] = [];
+  for (let i = 0; i < 30; i++) {
+    childrenToReturn.push(
+      <p
+        key={i.toString()}
+        className={classNames(className, {
+          current: position === i,
+        })}
+      >
+        {i % 10}
+      </p>,
+    );
+  }
+
+  return childrenToReturn;
+}
+
 export interface ScrollNumberProps {
   prefixCls?: string;
   className?: string;
   count?: string | number | null;
-  displayComponent?: React.ReactElement<any>;
+  displayComponent?: React.ReactElement<HTMLElement>;
   component?: string;
   onAnimated?: Function;
   style?: React.CSSProperties;
@@ -34,7 +50,7 @@ export interface ScrollNumberState {
   count?: string | number | null;
 }
 
-class ScrollNumber extends Component<ScrollNumberProps, ScrollNumberState> {
+class ScrollNumber extends React.Component<ScrollNumberProps, ScrollNumberState> {
   static defaultProps = {
     count: null,
     onAnimated() {},
@@ -54,12 +70,38 @@ class ScrollNumber extends Component<ScrollNumberProps, ScrollNumberState> {
 
   lastCount?: string | number | null;
 
+  private timeout?: number;
+
   constructor(props: ScrollNumberProps) {
     super(props);
     this.state = {
       animateStarted: true,
       count: props.count,
     };
+  }
+
+  componentDidUpdate(_: any, prevState: ScrollNumberState) {
+    this.lastCount = prevState.count;
+    const { animateStarted } = this.state;
+    if (animateStarted) {
+      this.clearTimeout();
+      // Let browser has time to reset the scroller before actually
+      // performing the transition.
+      this.timeout = setTimeout(() => {
+        // eslint-disable-next-line react/no-did-update-set-state
+        this.setState(
+          (__, props) => ({
+            animateStarted: false,
+            count: props.count,
+          }),
+          this.onAnimated,
+        );
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    this.clearTimeout();
   }
 
   getPositionByNum(num: number, i: number) {
@@ -86,45 +128,19 @@ class ScrollNumber extends Component<ScrollNumberProps, ScrollNumberState> {
     return num;
   }
 
-  componentDidUpdate(_: any, prevState: ScrollNumberState) {
-    this.lastCount = prevState.count;
-    const { animateStarted } = this.state;
+  onAnimated = () => {
     const { onAnimated } = this.props;
-    if (animateStarted) {
-      this.setState(
-        {
-          animateStarted: false,
-          count: this.props.count,
-        },
-        () => {
-          if (onAnimated) {
-            onAnimated();
-          }
-        },
-      );
+    if (onAnimated) {
+      onAnimated();
     }
-  }
-
-  renderNumberList(position: number) {
-    const childrenToReturn: React.ReactElement<any>[] = [];
-    for (let i = 0; i < 30; i++) {
-      const currentClassName = position === i ? 'current' : '';
-      childrenToReturn.push(
-        <p key={i.toString()} className={currentClassName}>
-          {i % 10}
-        </p>,
-      );
-    }
-
-    return childrenToReturn;
-  }
+  };
 
   renderCurrentNumber(prefixCls: string, num: number | string, i: number) {
     if (typeof num === 'number') {
       const position = this.getPositionByNum(num, i);
       const removeTransition =
         this.state.animateStarted || getNumberArray(this.lastCount)[i] === undefined;
-      return createElement(
+      return React.createElement(
         'span',
         {
           className: `${prefixCls}-only`,
@@ -136,7 +152,7 @@ class ScrollNumber extends Component<ScrollNumberProps, ScrollNumberState> {
           },
           key: i,
         },
-        this.renderNumberList(position),
+        renderNumberList(position, `${prefixCls}-only-unit`),
       );
     }
 
@@ -198,14 +214,19 @@ class ScrollNumber extends Component<ScrollNumberProps, ScrollNumberState> {
         ),
       });
     }
-    return createElement(component as any, newProps, this.renderNumberElement(prefixCls));
+    return React.createElement(component as any, newProps, this.renderNumberElement(prefixCls));
   };
 
   render() {
     return <ConfigConsumer>{this.renderScrollNumber}</ConfigConsumer>;
   }
-}
 
-polyfill(ScrollNumber);
+  private clearTimeout(): void {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = undefined;
+    }
+  }
+}
 
 export default ScrollNumber;

@@ -1,24 +1,25 @@
 import * as React from 'react';
-import { polyfill } from 'react-lifecycles-compat';
+import ExclamationCircleFilled from '@ant-design/icons/ExclamationCircleFilled';
 import Tooltip, { AbstractTooltipProps } from '../tooltip';
-import Icon from '../icon';
 import Button from '../button';
 import { ButtonType, NativeButtonProps } from '../button/button';
 import LocaleReceiver from '../locale-provider/LocaleReceiver';
-import defaultLocale from '../locale-provider/default';
+import defaultLocale from '../locale/default';
 import { ConfigConsumer, ConfigConsumerProps } from '../config-provider';
+import { getRenderPropValue, RenderFunction } from '../_util/getRenderPropValue';
 
 export interface PopconfirmProps extends AbstractTooltipProps {
-  title: React.ReactNode;
-  onConfirm?: (e?: React.MouseEvent<any>) => void;
-  onCancel?: (e?: React.MouseEvent<any>) => void;
+  title: React.ReactNode | RenderFunction;
+  disabled?: boolean;
+  onConfirm?: (e?: React.MouseEvent<HTMLElement>) => void;
+  onCancel?: (e?: React.MouseEvent<HTMLElement>) => void;
   okText?: React.ReactNode;
   okType?: ButtonType;
   cancelText?: React.ReactNode;
   okButtonProps?: NativeButtonProps;
   cancelButtonProps?: NativeButtonProps;
   icon?: React.ReactNode;
-  onVisibleChange?: (visible: boolean, e?: React.MouseEvent<any>) => void;
+  onVisibleChange?: (visible: boolean, e?: React.MouseEvent<HTMLElement>) => void;
 }
 
 export interface PopconfirmState {
@@ -36,13 +37,15 @@ class Popconfirm extends React.Component<PopconfirmProps, PopconfirmState> {
     placement: 'top' as PopconfirmProps['placement'],
     trigger: 'click' as PopconfirmProps['trigger'],
     okType: 'primary' as PopconfirmProps['okType'],
-    icon: <Icon type="exclamation-circle" theme="filled" />,
+    icon: <ExclamationCircleFilled />,
+    disabled: false,
   };
 
   static getDerivedStateFromProps(nextProps: PopconfirmProps) {
     if ('visible' in nextProps) {
       return { visible: nextProps.visible };
-    } else if ('defaultVisible' in nextProps) {
+    }
+    if ('defaultVisible' in nextProps) {
       return { visible: nextProps.defaultVisible };
     }
     return null;
@@ -81,11 +84,15 @@ class Popconfirm extends React.Component<PopconfirmProps, PopconfirmState> {
   };
 
   onVisibleChange = (visible: boolean) => {
+    const { disabled } = this.props;
+    if (disabled) {
+      return;
+    }
     this.setVisible(visible);
   };
 
   setVisible(visible: boolean, e?: React.MouseEvent<HTMLButtonElement>) {
-    const props = this.props;
+    const { props } = this;
     if (!('visible' in props)) {
       this.setState({ visible });
     }
@@ -111,20 +118,18 @@ class Popconfirm extends React.Component<PopconfirmProps, PopconfirmState> {
       icon,
     } = this.props;
     return (
-      <div>
-        <div className={`${prefixCls}-inner-content`}>
-          <div className={`${prefixCls}-message`}>
-            {icon}
-            <div className={`${prefixCls}-message-title`}>{title}</div>
-          </div>
-          <div className={`${prefixCls}-buttons`}>
-            <Button onClick={this.onCancel} size="small" {...cancelButtonProps}>
-              {cancelText || popconfirmLocale.cancelText}
-            </Button>
-            <Button onClick={this.onConfirm} type={okType} size="small" {...okButtonProps}>
-              {okText || popconfirmLocale.okText}
-            </Button>
-          </div>
+      <div className={`${prefixCls}-inner-content`}>
+        <div className={`${prefixCls}-message`}>
+          {icon}
+          <div className={`${prefixCls}-message-title`}>{getRenderPropValue(title)}</div>
+        </div>
+        <div className={`${prefixCls}-buttons`}>
+          <Button onClick={this.onCancel} size="small" {...cancelButtonProps}>
+            {cancelText || popconfirmLocale.cancelText}
+          </Button>
+          <Button onClick={this.onConfirm} type={okType} size="small" {...okButtonProps}>
+            {okText || popconfirmLocale.okText}
+          </Button>
         </div>
       </div>
     );
@@ -157,7 +162,5 @@ class Popconfirm extends React.Component<PopconfirmProps, PopconfirmState> {
     return <ConfigConsumer>{this.renderConfirm}</ConfigConsumer>;
   }
 }
-
-polyfill(Popconfirm);
 
 export default Popconfirm;

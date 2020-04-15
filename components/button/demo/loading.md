@@ -15,6 +15,7 @@ A loading indicator can be added to a button by setting the `loading` property o
 
 ```jsx
 import { Button } from 'antd';
+import { PoweroffOutlined } from '@ant-design/icons';
 
 class App extends React.Component {
   state = {
@@ -24,10 +25,16 @@ class App extends React.Component {
 
   enterLoading = () => {
     this.setState({ loading: true });
+    setTimeout(() => {
+      this.setState({ loading: false });
+    }, 8000);
   };
 
   enterIconLoading = () => {
     this.setState({ iconLoading: true });
+    setTimeout(() => {
+      this.setState({ iconLoading: false });
+    }, 8000);
   };
 
   render() {
@@ -45,15 +52,12 @@ class App extends React.Component {
         </Button>
         <Button
           type="primary"
-          icon="poweroff"
+          icon={<PoweroffOutlined />}
           loading={this.state.iconLoading}
           onClick={this.enterIconLoading}
         >
           Click me!
         </Button>
-        <br />
-        <Button shape="circle" loading />
-        <Button type="primary" shape="circle" loading />
       </div>
     );
   }

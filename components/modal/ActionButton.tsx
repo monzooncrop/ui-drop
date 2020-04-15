@@ -1,29 +1,28 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import Button from '../button';
-import { ButtonType, NativeButtonProps } from '../button/button';
+import { ButtonType, ButtonProps } from '../button/button';
 
 export interface ActionButtonProps {
   type?: ButtonType;
   actionFn?: (...args: any[]) => any | PromiseLike<any>;
   closeModal: Function;
   autoFocus?: boolean;
-  buttonProps?: NativeButtonProps;
+  buttonProps?: ButtonProps;
 }
 
 export interface ActionButtonState {
-  loading: boolean;
+  loading: ButtonProps['loading'];
 }
 
 export default class ActionButton extends React.Component<ActionButtonProps, ActionButtonState> {
   timeoutId: number;
 
-  constructor(props: ActionButtonProps) {
-    super(props);
-    this.state = {
-      loading: false,
-    };
-  }
+  clicked: boolean;
+
+  state = {
+    loading: false,
+  };
 
   componentDidMount() {
     if (this.props.autoFocus) {
@@ -38,6 +37,10 @@ export default class ActionButton extends React.Component<ActionButtonProps, Act
 
   onClick = () => {
     const { actionFn, closeModal } = this.props;
+    if (this.clicked) {
+      return;
+    }
+    this.clicked = true;
     if (actionFn) {
       let ret;
       if (actionFn.length) {
@@ -58,9 +61,11 @@ export default class ActionButton extends React.Component<ActionButtonProps, Act
           },
           (e: Error) => {
             // Emit error when catch promise reject
+            // eslint-disable-next-line no-console
             console.error(e);
             // See: https://github.com/ant-design/ant-design/issues/6183
             this.setState({ loading: false });
+            this.clicked = false;
           },
         );
       }
@@ -71,9 +76,14 @@ export default class ActionButton extends React.Component<ActionButtonProps, Act
 
   render() {
     const { type, children, buttonProps } = this.props;
-    const loading = this.state.loading;
+    const { loading } = this.state;
     return (
-      <Button type={type} onClick={this.onClick} loading={loading} {...buttonProps}>
+      <Button
+        type={type}
+        onClick={this.onClick}
+        loading={loading}
+        {...buttonProps}
+       >
         {children}
       </Button>
     );
