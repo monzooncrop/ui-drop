@@ -59,11 +59,11 @@ The following APIs are shared by DatePicker, YearPicker, MonthPicker, RangePicke
 | open | open state of picker | boolean | - |  |
 | picker | Set picker type | `date` \| `week` \| `month` \| `quarter` (4.1.0) \| `year` | `date` |  |
 | placeholder | placeholder of date input | string\|RangePicker\[] | - |  |
-| popupStyle | to customize the style of the popup calendar | object | {} |  |
+| popupStyle | to customize the style of the popup calendar | CSSProperties | {} |  |
 | size | determine the size of the input box, the height of `large` and `small`, are 40px and 24px respectively, while default size is 32px | `large` \| `middle` \| `small` | - |  |
 | bordered | whether has border style | Boolean | true |  |
 | suffixIcon | The custom suffix icon | ReactNode | - |  |
-| style | to customize the style of the input box | object | {} |  |
+| style | to customize the style of the input box | CSSProperties | {} |  |
 | onOpenChange | a callback function, can be executed whether the popup calendar is popped up or closed | function(open) | - |  |
 | onPanelChange | callback when picker panel mode is changed | function(value, mode) | - |  |
 | inputReadOnly | Set the `readonly` attribute of the input tag (avoids virtual keyboard on touch devices) | boolean | false |  |
@@ -146,7 +146,7 @@ Added in `4.1.0`.
 | allowEmpty | Allow start or end input leave empty | \[boolean, boolean] | \[false, false] |  |
 | defaultValue | to set default date | \[[moment](http://momentjs.com/), [moment](http://momentjs.com/)] | - |  |
 | defaultPickerValue | to set default picker date | \[[moment](http://momentjs.com/), [moment](http://momentjs.com/)\] | - |  |
-| disabled | disable start or end | [boolean, boolean] | - |  |
+| disabled | disable start or end | `[boolean, boolean]` | - |  |
 | disabledTime | to specify the time that cannot be selected | function(dates: \[moment, moment], partial: `'start'|'end'`) | - |  |
 | format | to set the date format, refer to [moment.js](http://momentjs.com/). When an array is provided, all values are used for parsing and first value is used for formatting. | string \| string[] | "YYYY-MM-DD HH:mm:ss" |  |
 | ranges | preseted ranges for quick selection | { \[range: string]: [moment](http://momentjs.com/)\[] } \| { \[range: string]: () => [moment](http://momentjs.com/)\[] } | - |  |

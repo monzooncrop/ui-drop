@@ -62,12 +62,14 @@ export default function generatePicker<DateType>(generateConfig: GenerateConfig<
       };
 
       renderPicker = (locale: PickerLocale) => {
-        const { getPrefixCls, direction } = this.context;
+        const { getPrefixCls, direction, getPopupContainer } = this.context;
         const {
           prefixCls: customizePrefixCls,
+          getPopupContainer: customizeGetPopupContainer,
           className,
           size: customizeSize,
           bordered = true,
+          placeholder,
           ...restProps
         } = this.props;
         const { format, showTime } = this.props as any;
@@ -99,7 +101,7 @@ export default function generatePicker<DateType>(generateConfig: GenerateConfig<
               return (
                 <RCPicker<DateType>
                   ref={this.pickerRef}
-                  placeholder={getPlaceholder(mergedPicker, locale)}
+                  placeholder={getPlaceholder(mergedPicker, locale, placeholder)}
                   suffixIcon={
                     mergedPicker === 'time' ? <ClockCircleOutlined /> : <CalendarOutlined />
                   }
@@ -115,6 +117,7 @@ export default function generatePicker<DateType>(generateConfig: GenerateConfig<
                     [`${prefixCls}-borderless`]: !bordered,
                   })}
                   prefixCls={prefixCls}
+                  getPopupContainer={customizeGetPopupContainer || getPopupContainer}
                   generateConfig={generateConfig}
                   prevIcon={<span className={`${prefixCls}-prev-icon`} />}
                   nextIcon={<span className={`${prefixCls}-next-icon`} />}

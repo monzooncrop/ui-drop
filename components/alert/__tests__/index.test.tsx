@@ -39,20 +39,20 @@ describe('Alert', () => {
 
   describe('data and aria props', () => {
     it('sets data attributes on input', () => {
-      const wrapper = mount(<Alert data-test="test-id" data-id="12345" />);
+      const wrapper = mount(<Alert data-test="test-id" data-id="12345" message={null} />);
       const input = wrapper.find('.ant-alert').getDOMNode();
       expect(input.getAttribute('data-test')).toBe('test-id');
       expect(input.getAttribute('data-id')).toBe('12345');
     });
 
     it('sets aria attributes on input', () => {
-      const wrapper = mount(<Alert aria-describedby="some-label" />);
+      const wrapper = mount(<Alert aria-describedby="some-label" message={null} />);
       const input = wrapper.find('.ant-alert').getDOMNode();
       expect(input.getAttribute('aria-describedby')).toBe('some-label');
     });
 
     it('sets role attribute on input', () => {
-      const wrapper = mount(<Alert role="status" />);
+      const wrapper = mount(<Alert role="status" message={null} />);
       const input = wrapper.find('.ant-alert').getDOMNode();
       expect(input.getAttribute('role')).toBe('status');
     });
@@ -60,6 +60,8 @@ describe('Alert', () => {
 
   const testIt = process.env.REACT === '15' ? it.skip : it;
   testIt('ErrorBoundary', () => {
+    // TODO: Change to @ts-expect-error once typescript is at 3.9
+    // @ts-ignore
     // eslint-disable-next-line react/jsx-no-undef
     const ThrowError = () => <NotExisted />;
     const wrapper = mount(
@@ -83,19 +85,15 @@ describe('Alert', () => {
     );
     wrapper.find('.ant-alert').simulate('mouseenter');
     await sleep(0);
-    expect(
-      wrapper
-        .find(Tooltip)
-        .instance()
-        .getPopupDomNode(),
-    ).toBeTruthy();
+    expect(wrapper.find<Tooltip>(Tooltip).instance().getPopupDomNode()).toBeTruthy();
     jest.useFakeTimers();
   });
 
   it('could be used with Popconfirm', async () => {
+    const ref = React.createRef<any>();
     jest.useRealTimers();
     const wrapper = mount(
-      <Popconfirm title="xxx">
+      <Popconfirm ref={ref} title="xxx">
         <Alert
           message="Warning Text Warning Text Warning TextW arning Text Warning Text Warning TextWarning Text"
           type="warning"
@@ -104,12 +102,12 @@ describe('Alert', () => {
     );
     wrapper.find('.ant-alert').simulate('click');
     await sleep(0);
-    expect(
-      wrapper
-        .find(Popconfirm)
-        .instance()
-        .getPopupDomNode(),
-    ).toBeTruthy();
+    expect(ref.current.getPopupDomNode()).toBeTruthy();
     jest.useFakeTimers();
+  });
+
+  it('could accept none react element icon', () => {
+    const wrapper = mount(<Alert message="Success Tips" type="success" showIcon icon="icon" />);
+    expect(wrapper).toMatchRenderedSnapshot();
   });
 });

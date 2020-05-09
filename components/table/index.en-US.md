@@ -63,10 +63,10 @@ const columns = [
 | bordered | Whether to show all table borders | boolean | `false` |
 | columns | Columns of table | [ColumnProps](#Column)\[] | - |
 | components | Override default table elements | [TableComponents](https://git.io/fANxz) | - |
-| dataSource | Data record array to be displayed | any\[] | - |
+| dataSource | Data record array to be displayed | object\[] | - |
 | expandable | Config expandable content | [expandable](#expandable) | - |
 | footer | Table footer renderer | Function(currentPageData) | - |
-| loading | Loading status of table | boolean\|[object](https://ant.design/components/spin-cn/#API) ([more](https://github.com/ant-design/ant-design/issues/4544#issuecomment-271533135)) | `false` |
+| loading | Loading status of table | boolean\|[object](/components/spin/#API) ([more](https://github.com/ant-design/ant-design/issues/4544#issuecomment-271533135)) | `false` |
 | locale | i18n text including filter, sort, empty text, etc | object | filterConfirm: 'Ok' <br> filterReset: 'Reset' <br> emptyText: 'No Data' <br> [Default](https://github.com/ant-design/ant-design/issues/575#issuecomment-159169511) |
 | pagination | Config of pagination. You can ref table pagination [config](#pagination) or full [`pagination`](/components/pagination/) document, hide it by setting it to `false` | object | - |
 | rowClassName | Row's className | Function(record, index):string | - |
@@ -130,6 +130,7 @@ One of the Table `columns` prop for describing the table's columns, Column has t
 | fixed | (IE not support) Set column to be fixed: `true`(same as left) `'left'` `'right'` | boolean\|string | `false` |
 | key | Unique key of this column, you can ignore this prop if you've set a unique `dataIndex` | string | - |
 | render | Renderer of the table cell. The return value should be a ReactNode, or an object for [colSpan/rowSpan config](#components-table-demo-colspan-rowspan) | Function(text, record, index) {} | - |
+| responsive | The list of breakpoints at which to display this column. Always visible if not set. | [Breakpoint](https://github.com/ant-design/ant-design/blob/015109b42b85c63146371b4e32b883cf97b088e8/components/_util/responsiveObserve.ts#L1)\[] | - |
 | sorter | Sort function for local sort, see [Array.sort](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)'s compareFunction. If you need sort buttons only, set to `true` | Function\|boolean | - |
 | sortOrder | Order of sorted values: `'ascend'` `'descend'` `false` | boolean\|string | - |
 | sortDirections | supported sort way, override `sortDirections` in `Table`, could be `'ascend'`, `'descend'` | Array | `['ascend', 'descend']` |
@@ -289,3 +290,7 @@ You may need to keep current page after filtering when fetch data from remote se
 ### Why Table pagination show size changer?
 
 In order to improve user experience, Pagination show size changer by default when `total >= 50` since `4.1.0`. You can set `showSizeChanger=false` to disable this feature.
+
+### Why Table fully render when state change?
+
+Table can not tell what state used in `columns.render`, so it always need fully render to avoid sync issue. But you can use `components` to customize component for conditional render. ref [#23763](https://github.com/ant-design/ant-design/issues/23763).

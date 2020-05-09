@@ -241,6 +241,7 @@ class Upload extends React.Component<UploadProps, UploadState> {
       disabled,
       locale: propLocale,
       iconRender,
+      isImageUrl,
     } = this.props;
     const {
       showRemoveIcon,
@@ -265,6 +266,7 @@ class Upload extends React.Component<UploadProps, UploadState> {
         downloadIcon={downloadIcon}
         iconRender={iconRender}
         locale={{ ...locale, ...propLocale }}
+        isImageUrl={isImageUrl}
       />
     );
   };
@@ -311,6 +313,7 @@ class Upload extends React.Component<UploadProps, UploadState> {
           [`${prefixCls}-drag-uploading`]: fileList.some(file => file.status === 'uploading'),
           [`${prefixCls}-drag-hover`]: dragState === 'dragover',
           [`${prefixCls}-disabled`]: disabled,
+          [`${prefixCls}-rtl`]: direction === 'rtl',
         },
         className,
       );

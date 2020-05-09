@@ -3,7 +3,6 @@ import { mount } from 'enzyme';
 import Upload from '..';
 import UploadList from '../UploadList';
 import Form from '../../form';
-import { spyElementPrototypes } from '../../__tests__/util/domHook';
 import { errorRequest, successRequest } from './requests';
 import { setup, teardown } from './mock';
 import { sleep } from '../../../tests/utils';
@@ -35,35 +34,16 @@ describe('Upload List', () => {
   function setSize(width, height) {
     size = { width, height };
   }
-  const imageSpy = spyElementPrototypes(Image, {
-    src: {
-      set() {
-        if (this.onload) {
-          this.onload();
-        }
-      },
-    },
-    width: {
-      get: () => size.width,
-    },
-    height: {
-      get: () => size.height,
-    },
-  });
+  const mockWidthGet = jest.spyOn(Image.prototype, 'width', 'get');
+  const mockHeightGet = jest.spyOn(Image.prototype, 'height', 'get');
+  const mockSrcSet = jest.spyOn(Image.prototype, 'src', 'set');
 
   let drawImageCallback = null;
   function hookDrawImageCall(callback) {
     drawImageCallback = callback;
   }
-  const canvasSpy = spyElementPrototypes(HTMLCanvasElement, {
-    getContext: () => ({
-      drawImage: (...args) => {
-        if (drawImageCallback) drawImageCallback(...args);
-      },
-    }),
-
-    toDataURL: () => 'data:image/png;base64,',
-  });
+  const mockGetCanvasContext = jest.spyOn(HTMLCanvasElement.prototype, 'getContext');
+  const mockToDataURL = jest.spyOn(HTMLCanvasElement.prototype, 'toDataURL');
 
   // HTMLCanvasElement.prototype
 
@@ -76,12 +56,29 @@ describe('Upload List', () => {
   let open;
   beforeAll(() => {
     open = jest.spyOn(window, 'open').mockImplementation(() => {});
+    mockWidthGet.mockImplementation(() => size.width);
+    mockHeightGet.mockImplementation(() => size.height);
+    mockSrcSet.mockImplementation(function fn() {
+      if (this.onload) {
+        this.onload();
+      }
+    });
+
+    mockGetCanvasContext.mockReturnValue({
+      drawImage: (...args) => {
+        if (drawImageCallback) drawImageCallback(...args);
+      },
+    });
+    mockToDataURL.mockReturnValue('data:image/png;base64,');
   });
 
   afterAll(() => {
     window.URL.createObjectURL = originCreateObjectURL;
-    imageSpy.mockRestore();
-    canvasSpy.mockRestore();
+    mockWidthGet.mockRestore();
+    mockHeightGet.mockRestore();
+    mockSrcSet.mockRestore();
+    mockGetCanvasContext.mockRestore();
+    mockToDataURL.mockRestore();
     open.mockRestore();
   });
 
@@ -736,6 +733,56 @@ describe('Upload List', () => {
 
     test('File', () => new File([], 'xxx.png'));
     test('Blob', () => new Blob());
+  });
+
+  // https://github.com/ant-design/ant-design/issues/22958
+  describe('customize isImageUrl support', () => {
+    const list = [
+      ...fileList,
+      {
+        uid: '0',
+        name: 'xxx.png',
+        status: 'done',
+        url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
+        thumbUrl:
+          'http://image-demo.oss-cn-hangzhou.aliyuncs.com/example.jpg@!panda_style?spm=a2c4g.11186623.2.17.4dc56b29BHokyg&file=example.jpg@!panda_style',
+      },
+    ];
+    it('should not render <img /> when file.thumbUrl use "!" as separator', () => {
+      const wrapper = mount(
+        <Upload listType="picture-card" fileList={list}>
+          <button type="button">button</button>
+        </Upload>,
+      );
+      const imgNode = wrapper.find('.ant-upload-list-item-thumbnail img');
+      expect(imgNode.length).toBe(2);
+    });
+    it('should render <img /> when custom imageUrl return true', () => {
+      const isImageUrl = jest.fn(() => {
+        return true;
+      });
+      const wrapper = mount(
+        <Upload listType="picture-card" fileList={list} isImageUrl={isImageUrl}>
+          <button type="button">button</button>
+        </Upload>,
+      );
+      const imgNode = wrapper.find('.ant-upload-list-item-thumbnail img');
+      expect(isImageUrl).toHaveBeenCalled();
+      expect(imgNode.length).toBe(3);
+    });
+    it('should not render <img /> when custom imageUrl return false', () => {
+      const isImageUrl = jest.fn(() => {
+        return false;
+      });
+      const wrapper = mount(
+        <Upload listType="picture-card" fileList={list} isImageUrl={isImageUrl}>
+          <button type="button">button</button>
+        </Upload>,
+      );
+      const imgNode = wrapper.find('.ant-upload-list-item-thumbnail img');
+      expect(isImageUrl).toHaveBeenCalled();
+      expect(imgNode.length).toBe(0);
+    });
   });
 
   it('should support transformFile', done => {
